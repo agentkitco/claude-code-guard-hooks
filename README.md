@@ -12,9 +12,19 @@ Blocked calls exit with code 2 and a one-line reason, so Claude sees why and pic
 
 ## Install (about 2 minutes)
 
-1. Copy `.claude/hooks/` into your project and keep the scripts executable (`chmod +x .claude/hooks/*.sh`).
-2. Merge the `hooks` block from `.claude/settings.example.json` into your project's `.claude/settings.json` (or `~/.claude/settings.json` for every project).
-3. Run `bash test.sh` to watch every rule fire (54 checks), then start a new Claude Code session and type `/hooks` to confirm they loaded.
+```bash
+git clone https://github.com/agentkitco/claude-code-guard-hooks && cd claude-code-guard-hooks
+bash install.sh --project /path/to/your/repo --dry-run   # preview, writes nothing
+bash install.sh --project /path/to/your/repo             # or --user for ~/.claude
+```
+
+The installer copies the three hooks, merges them into `.claude/settings.json` without touching your other settings or hooks, backs up the old file first, and is safe to run twice. Then it runs a doctor check.
+
+- `bash install.sh --project DIR --doctor` re-checks dependencies, file permissions, the settings entries and one live block.
+- `bash install.sh --project DIR --uninstall` removes only these hooks.
+- Prefer doing it by hand? Copy `.claude/hooks/` and merge the `hooks` block from `.claude/settings.example.json`.
+
+Run `bash test.sh` to watch every rule fire plus the installer round-trip (59 checks), then start a new Claude Code session and type `/hooks` to confirm they loaded.
 
 Needs bash and `jq` (Linux, macOS, WSL or Git Bash).
 
@@ -30,4 +40,4 @@ Needs bash and `jq` (Linux, macOS, WSL or Git Bash).
 - [Claude Code Subagent Pack](https://agentkitco.com/products/claude-code-subagent-pack/): ready subagents for review, tests and debugging.
 - Free stack starters: [agent-config-templates](https://github.com/agentkitco/agent-config-templates) · Free skills: [agentkit-dev-skills](https://github.com/agentkitco/agentkit-dev-skills)
 
-Not affiliated with or endorsed by Anthropic. AI-assisted, human-checked by running `test.sh`.
+Not affiliated with or endorsed by Anthropic. AI-assisted, human-checked by running `test.sh` (last run 2026-11-09).

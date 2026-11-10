@@ -29,4 +29,13 @@ echo '{"stop_hook_active":false}' | AGENTKIT_TEST_CMD=true "$T" >/dev/null 2>&1;
 echo '{"stop_hook_active":false}' | AGENTKIT_TEST_CMD=false "$T" >/dev/null 2>&1; chk 2 $? "failing tests -> block"
 echo '{"stop_hook_active":true}' | AGENTKIT_TEST_CMD=false "$T" >/dev/null 2>&1; chk 0 $? "stop_hook_active -> no loop"
 jq empty "$(dirname "$0")/.claude/settings.example.json" && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL settings JSON"; }
+# Installer checks (temp dir; never touches your real settings)
+I="$(cd "$(dirname "$0")" && pwd)/install.sh"; TMP=$(mktemp -d)
+mkdir -p "$TMP/.claude" && echo '{"permissions":{"allow":["Bash(npm test)"]},"hooks":{"PreToolUse":[{"matcher":"Write","hooks":[{"type":"command","command":"mine.sh"}]}]}}' > "$TMP/.claude/settings.json"
+bash "$I" --project "$TMP" --dry-run >/dev/null 2>&1; [ ! -d "$TMP/.claude/hooks" ]; chk 0 $? "dry-run writes nothing"
+bash "$I" --project "$TMP" >/dev/null 2>&1 && bash "$I" --project "$TMP" >/dev/null 2>&1; chk 0 $? "install twice"
+n=$(jq '[.. | .command? // empty] | length' "$TMP/.claude/settings.json"); [ "$n" = 4 ]; chk 0 $? "idempotent merge keeps your hook (got $n commands)"
+bash "$I" --project "$TMP" --doctor >/dev/null 2>&1; chk 0 $? "doctor passes after install"
+bash "$I" --project "$TMP" --uninstall >/dev/null 2>&1; jq -e '.permissions.allow[0]=="Bash(npm test)" and ([.. | .command? // empty]==["mine.sh"])' "$TMP/.claude/settings.json" >/dev/null; chk 0 $? "uninstall leaves your settings"
+rm -rf "$TMP"
 echo "$pass passed, $fail failed"; [ $fail -eq 0 ]
