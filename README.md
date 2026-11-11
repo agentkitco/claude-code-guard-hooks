@@ -9,6 +9,18 @@ Four small, tested [Claude Code hooks](https://code.claude.com/docs/en/hooks) th
 | `test-gate-on-stop.sh` | Stop | Opt-in: set `AGENTKIT_TEST_CMD` (for example `npm test`). If it fails, Claude is told to keep working instead of declaring done. Honors `stop_hook_active`, so it can't loop forever |
 | `loop-guard.sh` | PreToolUse, `Bash\|Edit\|Write` | Stops the retry loop: after the exact same Bash command runs 3 times in a row with no file edit in between, the next identical run is blocked with a nudge to read the error and change approach. Any edit or different command resets it. Tune with `AGENTKIT_LOOP_LIMIT` (`0` turns it off). State lives in a small temp file per session |
 
+What it looks like (real output from the hooks in this repo, reasons shortened):
+
+```text
+BLOCK  rm -rf ~                       recursive rm on /, ~, $HOME or ..
+ALLOW  rm -rf ./dist
+BLOCK  git push --force origin main   force push to main/master
+BLOCK  Read .env.local                touches a secrets file
+ALLOW  Read .env.example
+ALLOW  npm test   (run 1, 2, 3 with no edits between)
+BLOCK  npm test   (run 4)             same command 3 times in a row without changing any files
+```
+
 Blocked calls exit with code 2 and a one-line reason, so Claude sees why and picks a safer step.
 
 ## Install (about 2 minutes)
