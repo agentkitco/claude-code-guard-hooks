@@ -13,7 +13,7 @@ while [ $# -gt 0 ]; do case "$1" in
   -h|--help) sed -n '2,3p' "$0"; exit 0;;
   *) echo "Unknown option: $1" >&2; exit 1;;
 esac; done
-HOOKS=(block-dangerous-bash.sh protect-secrets.sh test-gate-on-stop.sh)
+HOOKS=(block-dangerous-bash.sh protect-secrets.sh test-gate-on-stop.sh loop-guard.sh)
 DEST="$TARGET/.claude/hooks"; SET="$TARGET/.claude/settings.json"
 # When installing to ~/.claude, hook commands must not depend on the project dir.
 if [ "$TARGET" = "$HOME" ]; then PREFIX="$HOME/.claude/hooks"; else PREFIX='"$CLAUDE_PROJECT_DIR"/.claude/hooks'; fi
@@ -22,7 +22,7 @@ run() { if [ $DRY -eq 1 ]; then say "[dry-run] $*"; else eval "$@"; fi; }
 need() { command -v "$1" >/dev/null 2>&1 || { echo "Missing dependency: $1" >&2; exit 1; }; }
 block() { jq --arg p "$PREFIX" '(.hooks // {}) | map_values(map(.hooks |= map(.command |= sub("\"\\$CLAUDE_PROJECT_DIR\"/.claude/hooks"; $p))))' "$SRC/.claude/settings.example.json" | jq '{hooks: .}'; }
 strip() { # remove any of our hook entries from a settings file on stdin
-  jq 'if .hooks then .hooks |= (map_values(map(.hooks |= map(select((.command // "") | test("(block-dangerous-bash|protect-secrets|test-gate-on-stop)\\.sh") | not))) | map(select((.hooks|length) > 0))) | with_entries(select((.value|length) > 0))) else . end | if (.hooks // {}) == {} then del(.hooks) else . end'; }
+  jq 'if .hooks then .hooks |= (map_values(map(.hooks |= map(select((.command // "") | test("(block-dangerous-bash|protect-secrets|test-gate-on-stop|loop-guard)\\.sh") | not))) | map(select((.hooks|length) > 0))) | with_entries(select((.value|length) > 0))) else . end | if (.hooks // {}) == {} then del(.hooks) else . end'; }
 doctor() {
   local ok=0 bad=0
   chk() { if eval "$2"; then say "ok   $1"; ok=$((ok+1)); else say "FAIL $1"; bad=$((bad+1)); fi; }
