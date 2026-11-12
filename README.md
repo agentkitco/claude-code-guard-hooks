@@ -51,6 +51,7 @@ Needs bash and `jq` (Linux, macOS, WSL or Git Bash).
 ## Want the full setup?
 
 - [AI Coding Agent Config Kit](https://agentkitco.com/products/agent-config-kit/): AGENTS.md, CLAUDE.md, Cursor and Copilot files for 12 stacks plus audit prompts.
+- [Claude Code Usage Saver Kit](https://agentkitco.com/products/claude-code-usage-saver/): read-only usage audit script, a hook that trims test output to failures, small-model subagents and a context-budget skill, for burning fewer tokens.
 - [Claude Code Subagent Pack](https://agentkitco.com/products/claude-code-subagent-pack/): ready subagents for review, tests and debugging.
 - Free stack starters: [agent-config-templates](https://github.com/agentkitco/agent-config-templates) · Free skills: [agentkit-dev-skills](https://github.com/agentkitco/agentkit-dev-skills)
 
